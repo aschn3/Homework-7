@@ -1,4 +1,4 @@
-    $(function) {
+    $(function() {
 
   var config = {
       apiKey: "AIzaSyC1ExUJJP4F6OThM-xxO-Qlf6YVYD9kuCw",
@@ -25,7 +25,56 @@
             Destination: Destination,
             firstTrain: firstTrain,
             Frequency: Frequency,
-            
+            dateAdded: firebase.database.ServerValue.TIMESTAMP
+
         });
 
+        var ID = newRecord.key;
+
+        database.ref(ID).update({
+            ID: ID
+        })
+
+        $('#trainName').val('');
+        $('#Destination').val('');
+        $('#firstTrain').val('');
+        $('#Frequency').val('');
+    })
+
+  database.ref().orderByChild("dateAdded").limitToLast(1).on("child_added", function(snapshot) {
+        var table = $('.table');
+        var row = $('<tr>');
+
+        //moment({ // Options here }).format('HHmm')
+        //moment("02:00 PM", "h:mm A").format("HH:mm")
+
+        var firstTrain = moment(snapshot.val().firstTrain);
+        var Frequency = moment().diff(moment(firstTrain), "minutes");
+        console.log(Frequency);
+         console.log("test"+firstTrain);
+       var firstTraintime = moment(firstTrain).subtract(1, "years");
+            console.log(firstTraintime);
+
+       var currentTime = moment();
+       console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+
+      var diffTime = moment(currentTime).diff(moment(firstTraintime), "minutes");
+    console.log("DIFFERENCE IN TIME: " + diffTime); 
+
+      var tRemainder = diffTime % Frequency;
+    console.log(tRemainder);
+
+      var tMinutesTillTrain = Frequency - tRemainder;
+    console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
+
+    var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+    console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
+
+        row.append('<td>' + snapshot.val().trainName + '</td>').append('<td>' + snapshot.val().Destination + '</td>').append('<td>' + snapshot.val().Frequency + '</td>').append('<td>' + snapshot.val().tMinutesTillTrain + '</td>').append('<td>' + snapshot.val().nextTrain + '</td>');
+        table.append(row);
+
+    });
+
+
+});
 
